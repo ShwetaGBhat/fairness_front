@@ -15,13 +15,11 @@ RUN npm run build --prod
 FROM nginx:1.19.0
 COPY --from=build-step /app/dist /usr/share/nginx/html
 
-COPY --from=build-step /usr/share/nginx/nginx.conf /etc/nginx/conf.d/
-COPY --from=build-step /usr/app/entrypoint.sh /usr/share/nginx/
-RUN chmod +x /usr/share/nginx/entrypoint.sh
-CMD ["/bin/sh", "/usr/share/nginx/entrypoint.sh"]
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN chmod +x 
+CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
 
 #COPY --from=build-step /app/dist /src/html
 #COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-#CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
 EXPOSE "$PORT"
