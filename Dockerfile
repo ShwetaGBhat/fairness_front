@@ -15,6 +15,11 @@ RUN npm run build --prod
 FROM nginx:1.19.0
 COPY --from=build-step /app/dist /usr/share/nginx/html
 
+COPY nginx/default.conf.template /etc/nginx/conf.d/
+COPY --from=build /usr/app/entrypoint.sh /usr/share/nginx/
+RUN chmod +x /usr/share/nginx/entrypoint.sh
+CMD ["/bin/sh", "/usr/share/nginx/entrypoint.sh"]
+
 #COPY --from=build-step /app/dist /src/html
 #COPY nginx.conf /etc/nginx/conf.d/default.conf
 
