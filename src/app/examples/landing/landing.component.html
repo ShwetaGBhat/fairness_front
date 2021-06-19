@@ -1,0 +1,255 @@
+<div class="main">
+
+    <div class="section text-center">
+        <div style="margin-top: 50px;" class="container">
+            <div class="row">
+                <div style="text-align: left;">
+                    
+                    <h2>Welcome!</h2> <br/>
+                    <p style="text-align: justify;">
+                        
+                        This is the project page for the  Scientific Team Project on Fair Recommendation in Research. <br/><br/><br/><br/>
+                        
+                        This project is designed to study the impact of bias and fairness constraints that are featured most by contemporary literature. 
+                        Based on the dataset provided by <a target="_blank" href="http://www.gei.de/en/home.html">Georg Eckert Institute for International Textbook Research</a>, 
+                        we want to show you a regular recommendation and a bias corrected version of the same recommendation. 
+                        Our hope is that this experiement will help us in understanding the impact of these bias correction techniques. 
+
+                        <br/><br/><br/>
+
+                        Below, you will see some input that you must select in order play with this recommendation system. Both the User Name field and the Research Interest field are searchable database 
+                        of all the available users and research interests. Furthermore, the preference slider will give us your preference value. If you say 0.4, we will consider you prefer to put 
+                        40% of the weight to similarity and 60% to distance. 
+                        <br/><br/>
+                        On each card, there will be information related to the individual researcher. On the top-right corner of each of these cards, there are three numbers. These three numbers signify the 
+                        similarity score that our algorithm calculated for that individual. Among these three numbers, the first item on the left most position is the overall similarity score, the middle one 
+                        is the cosine similarity score, and the last one on the right is the hop distances that was required to get to this person inside the graph. 
+
+                        <br/><br/><br/>
+                        
+                        This project was developed using Angular 11, Django REST Framework and is powered by Docker.<br/><br/>
+
+                        Please also check <a target="_blank" href="http://localhost:8080/swagger/">this link</a> for swagger documentation of the back-end API. <br/>
+                        You can also visit <a target="_blank" href="http://localhost:8080/redoc/">this page</a> for a different view of the same documentation. 
+
+                    </p>
+                <br/>
+                
+                
+                </div>
+            </div>
+            <div id="not_found_div" hidden>
+                
+                <h3 style="text-align: center;">Apologies, you probably don't have access to this content anymore.</h3>
+            </div>
+            <div id="input_compartment" hidden>
+                <h3>Inputs for Recommendation</h3>
+                <br/><br/><br/>
+
+            
+                <div class="row">
+                    <div style="margin-right: 30px;"  class="col-md-4">
+                        <div style="display: inline-flex;" class="row">
+                            <div class="col-md-3" style="padding-left: 0px; padding-right: 0px; position: relative; left: 5px; top: 10px;">
+                                User Name
+                            </div>
+                            <div class="ng-autocomplete col-md-5">
+                                <ng-autocomplete
+                                [data]="users"
+                                [searchKeyword]="keyword"
+                                placeholder="Search for User Name"
+                                (selected)='userSelectEvent($event)'
+                                (inputChanged)='userOnChangeSearch($event)'
+                                (inputFocused)='userOnFocused($event)'
+                                historyIdentifier="users"
+                                [itemTemplate]="itemTemplate"
+                                [notFoundTemplate]="notFoundTemplate">
+                                </ng-autocomplete>
+                            
+                                <ng-template #itemTemplate let-item>
+                                <a [innerHTML]="item.name"></a>
+                                </ng-template>
+                            
+                                <ng-template #notFoundTemplate let-notFound>
+                                <div [innerHTML]="notFound"></div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div style="display: inline-flex;" class="row">
+                            <div class="col-md-3">
+                                <label>Research Interest</label>
+                            </div>
+                            <div class="ng-autocomplete col-md-7" style="width: 300px;">
+                                
+                                <ng-autocomplete
+                                [data]="research_interests"
+                                [searchKeyword]="keyword"
+                                placeholder="Search for Research ..."
+                                (selected)='interestSelectEvent($event)'
+                                (inputChanged)='interestOnChangeSearch($event)'
+                                (inputFocused)='interestOnFocused($event)'
+                                historyIdentifier="research_interests"
+                                [itemTemplate]="itemTemplate"
+                                [notFoundTemplate]="notFoundTemplate">
+                                </ng-autocomplete>
+                            
+                                <ng-template #itemTemplate let-item>
+                                <a [innerHTML]="item.name"></a>
+                                </ng-template>
+                            
+                                <ng-template #notFoundTemplate let-notFound>
+                                <div [innerHTML]="notFound"></div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3" title="The value that you select will get multipled to Similarity score and 
+the 1's complement wil be multipled to hop distance value.
+The resulting number will be used to generate recommendation." >
+                        <label>Preference: Similarity - Distance</label>
+                        <nouislider [connect]="false" [min]="0" [max]="1" [step]="0.01" [(ngModel)]="simpleSlider"
+                            [tooltips]="true" [behaviour]="snap" class="slider"></nouislider>
+                    </div>
+        
+                </div>
+                <br /><br />
+                <div class="row">
+                    <div class="col-md-12">
+                        <button (click)="loadRecommendationData()" 
+                                type="button" 
+                                *ngIf="selected_user != null && selected_interest != null"
+                                class="btn btn-default btn-lg">
+                            Get Suggestions
+                        </button>
+                    </div>
+                </div>
+                <br /><br />
+                <div id="no-data-div" class="row" hidden>
+                    <div class="col-md-12 pull-left">
+                        <h5 style="text-align: justify;">Apologies, our database do not have any data to show for this combination.</h5>
+                    </div>
+                </div>
+                <div id="result_section" class="row" hidden>
+                    
+                    <div class="col-md-12 pull-left">
+                        <h5 style="text-align: justify;">For this combination, the female ratio in the overall result is: {{female_ratio}}. This will be maintained throuout the pages, as long as enough women are left.</h5>
+                    </div>
+                    
+                    <br/><br/>
+                    <br/><br/>
+                    <br/><br/>
+
+                    <div id="vanishing_div" class="row">
+                        <div class="col-md-5">
+                            <div class="row">
+                                <label class="pull-left"><h4>Before Bias Correction</h4></label>
+                            </div>
+                            
+                            <div class="row">
+                                <div *ngFor="let item of with_bias" class="card col-md-12">
+                                    <div class="card-body" (click)="clickResponse1(item)">
+                                        <div class="row">
+                                            <div class="col-md-6 pull-left">
+                                                <h5 class="card-title"> {{ item.name }} </h5>
+                                            </div>
+                                            <div class="col-md-6 pull-right">
+                                                <label class="pull-right" title="Order of the score: Overall Score, Cosine Similarity Score, Hop Distance"> <h6>{{item.score}}, {{item.cosine_sim}}, {{item.hop_distance}}</h6></label>
+                                            </div>
+                                        </div>
+    
+                                        <div class="row">
+                                            <div class="col-md-12 pull-left">
+                                                <label>{{ item.research_interests }} </label>
+                                                <br/>
+                                                <label *ngIf="item.gender != 'Not-Given' && item.nationality != ''"> Gender: {{ item.gender }}, Nationality: {{ item.nationality }} </label>
+                                                <label *ngIf="item.gender == 'Not-Given' && item.nationality != ''"> Gender: Unspecified, Nationality: {{ item.nationality }} </label>
+                                                <label *ngIf="item.gender != 'Not-Given' && item.nationality == ''"> Gender: {{ item.gender }}, Nationality: Unspecified </label>
+                                                <label *ngIf="item.gender == 'Not-Given' && item.nationality == ''"> Gender: Unspecified, Nationality: Unspecified </label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        </div>
+                                    </div>
+                                    <div id="{{ item.uuid }}-biased" class="cardInfo pull-right" (click)="biased_paper_card_click(item)" hidden>
+                                        <h5 id= "div_1_title"class="card-title">Literature List</h5>
+                                        <div *ngFor="let paper of item.publication_list" class="card col-md-12">
+                                            <div class="row">
+                                                <p class="card-text">{{ paper.title }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+    
+                        </div>
+                        <div class="col-md-5">
+                            <div class="row">
+                                <label class="pull-left"><h4>After Bias Correction</h4></label>
+                            </div>
+                            <div class="row">
+                                <div *ngFor="let item of bias_corrected; index as i" class="card col-md-12">
+                                    <div class="card-body" (click)="clickResponse2(item)">
+                                        <div class="row">
+                                            <div class="col-md-6 pull-left">
+                                                <h5 class="card-title"> {{ item.name }} </h5>
+                                            </div>
+                                            <div class="col-md-6 pull-right">
+                                                <label class="pull-right" title="Order of the score: Overall Score, Cosine Similarity Score, Hop Distance"> <h6>{{item.score}}, {{item.cosine_sim}}, {{item.hop_distance}}</h6></label>
+                                            </div>
+                                        </div>
+    
+                                        <div class="row">
+                                            <div class="col-md-12 pull-left">
+                                                <label> {{ item.research_interests }} </label>
+                                                <br/>
+                                                <label *ngIf="item.gender != 'Not-Given' && item.nationality != ''"> Gender: {{ item.gender }}, Nationality: {{ item.nationality }} </label>
+                                                <label *ngIf="item.gender == 'Not-Given' && item.nationality != ''"> Gender: Unspecified, Nationality: {{ item.nationality }} </label>
+                                                <label *ngIf="item.gender != 'Not-Given' && item.nationality == ''"> Gender: {{ item.gender }}, Nationality: Unspecified </label>
+                                                <label *ngIf="item.gender == 'Not-Given' && item.nationality == ''"> Gender: Unspecified, Nationality: Unspecified </label>
+                                            </div>
+                                        </div>
+    
+                                        <div class="row">
+                                            <div class="col-md-2 pull-left">
+    
+                                                <label *ngIf="item.bias_ref > ((page_size * (page-1) ) + i)"> <i class="nc-icon nc-minimal-up"></i> {{ item.bias_ref - ((page_size * (page-1) ) + i) }}</label>
+                                                <label *ngIf="item.bias_ref < ((page_size * (page-1) ) + i)"> <i class="nc-icon nc-minimal-down"></i> {{ ((page_size * (page-1) ) + i) - item.bias_ref }}</label>
+                                                <label *ngIf="item.bias_ref == ((page_size * (page-1) ) + i)"> <i class="nc-icon nc-simple-remove"></i> {{ ((page_size * (page-1) ) + i) - item.bias_ref }}</label>
+                                                
+                                                <!-- <label> <i class="fas fa-arrow-up"></i> {{ item.bias_ref }}</label> -->
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                    <div id="{{ item.uuid }}-corrected" class="cardInfo pull-right" (click)="corrected_paper_card_click(item)" hidden>
+                                        <h5 id= "div_1_title"class="card-title">Literature List</h5>
+                                        <div *ngFor="let paper of item.publication_list" class="card col-md-12">
+                                            <div class="row">
+                                                <p class="card-text">{{ paper.title }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12" id="pagination_div" hidden>
+                <ngb-pagination (pageChange)="onPageChange($event)" [collectionSize]="collection_size" [(page)]="page" [maxSize]="5" [rotate]="true">
+                </ngb-pagination>
+            </div>
+        </div>
+    </div>
+</div>

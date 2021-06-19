@@ -1,0 +1,3 @@
+build:
+  docker:
+    fairness_front: server/fairness_front/Dockerfile
