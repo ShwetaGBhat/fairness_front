@@ -1,3 +1,3 @@
-fairness_frontbuild:
+build:
   docker:
-    fairness_front: Dockerfilee
+    fairness_front: Dockerfile
